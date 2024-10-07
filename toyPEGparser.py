@@ -41,7 +41,10 @@ class Tokenizer:
         return token
     def peek_token(self):
         if self.pos == len(self.tokens):
-            self.tokens.append(next(self.tokengen))
+            try:
+                self.tokens.append(next(self.tokengen))
+            except StopIteration:
+                return None
         return self.tokens[self.pos]
 
 class Parser:
@@ -53,7 +56,7 @@ class Parser:
         self.tokenizer.reset(pos)
     def expect(self, arg):
         token = self.tokenizer.peek_token()
-        if token.type == arg or token.string == arg:
+        if token  and (token.type == arg or token.string == arg):
             return self.tokenizer.get_token()
         return None
 
@@ -74,7 +77,7 @@ class ToyParser(Parser):
         if target := self.expect(TokenType.NAME):
             if eql := self.expect(TokenType.EQUAL):
                 if exprn := self.expr():
-                    return Node("assign", target, eql, exprn)
+                    return Node("assign", [target, eql, exprn])
         return None
 
     
